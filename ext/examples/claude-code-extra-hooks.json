@@ -1,0 +1,131 @@
+{
+  "_comment": [
+    "把这 5 段合并进 %USERPROFILE%\.claude\\settings.json 的 hooks 对象里（不要整个文件替换）。",
+    "控制中心当前只挂了 9 个事件：SessionStart/SessionEnd/UserPromptSubmit/PreToolUse/PostToolUse/PostToolUseFailure/PermissionRequest/Stop/StopFailure。",
+    "下面 5 个是它没挂、但 Claude Code 支持、且对桌宠有意义的事件。",
+    "命令用 C:\\Windows\\System32\\curl.exe（Windows 自带）而不是 powershell -EncodedCommand：实测 33-55ms vs 630-770ms。",
+    "注意：改完别在控制中心里再点这个工具的开关，否则会被它的模板配置覆盖（它只按自己那 9 个事件生成）。"
+  ],
+
+  "Notification": [
+    {
+      "matcher": "*",
+      "hooks": [
+        {
+          "type": "command",
+          "timeout": 5,
+          "command": "C:\\Windows\\System32\\curl.exe -s -o NUL --max-time 2 \"http://127.0.0.1:18892/event?s=waiting\""
+        }
+      ]
+    }
+  ],
+
+  "PreCompact": [
+    {
+      "matcher": "*",
+      "hooks": [
+        {
+          "type": "command",
+          "timeout": 5,
+          "command": "C:\\Windows\\System32\\curl.exe -s -o NUL --max-time 2 \"http://127.0.0.1:18892/event?s=coding\""
+        }
+      ]
+    }
+  ],
+
+  "PostCompact": [
+    {
+      "matcher": "*",
+      "hooks": [
+        {
+          "type": "command",
+          "timeout": 5,
+          "command": "C:\\Windows\\System32\\curl.exe -s -o NUL --max-time 2 \"http://127.0.0.1:18892/event?s=coding\""
+        }
+      ]
+    }
+  ],
+
+  "SubagentStart": [
+    {
+      "matcher": "*",
+      "hooks": [
+        {
+          "type": "command",
+          "timeout": 5,
+          "command": "C:\\Windows\\System32\\curl.exe -s -o NUL --max-time 2 \"http://127.0.0.1:18894/event?e=delegating&t=Subagent+Start\""
+        }
+      ]
+    }
+  ],
+
+  "SubagentStop": [
+    {
+      "matcher": "*",
+      "hooks": [
+        {
+          "type": "command",
+          "timeout": 5,
+          "command": "C:\\Windows\\System32\\curl.exe -s -o NUL --max-time 2 \"http://127.0.0.1:18894/event?e=coding&t=Subagent+Done\""
+        }
+      ]
+    }
+  ],
+
+  "_variants": {
+    "用扩展桥显示真正的工具名（需要先跑 python ext\\mochi_bridge.py --terminal）": {
+      "PreToolUse": [
+        {
+          "matcher": "Bash|Write|Edit|MultiEdit",
+          "hooks": [
+            {
+              "type": "command",
+              "timeout": 10,
+              "command": "python <repo>\\ext\\mochi_hook.py coding --stdin tool_name --quiet"
+            }
+          ]
+        }
+      ],
+      "PostToolUse": [
+        {
+          "matcher": "*",
+          "hooks": [
+            {
+              "type": "command",
+              "timeout": 5,
+              "command": "C:\\Windows\\System32\\curl.exe -s -o NUL --max-time 2 \"http://127.0.0.1:18892/event?s=coding\""
+            }
+          ]
+        }
+      ]
+    },
+    "只给危险命令报警（matcher 精确匹配，减少噪音）": {
+      "PreToolUse": [
+        {
+          "matcher": "Bash",
+          "hooks": [
+            {
+              "type": "command",
+              "timeout": 5,
+              "command": "C:\\Windows\\System32\\curl.exe -s -o NUL --max-time 2 \"http://127.0.0.1:18892/event?s=coding\""
+            }
+          ]
+        }
+      ]
+    },
+    "把上下文用量画成进度条（需要 --canvas，p 取值 0..1）": {
+      "PreToolUse": [
+        {
+          "matcher": "*",
+          "hooks": [
+            {
+              "type": "command",
+              "timeout": 10,
+              "command": "python <repo>\\ext\\mochi_hook.py coding --progress 0.35 --quiet"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

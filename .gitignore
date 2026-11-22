@@ -1,0 +1,46 @@
+# ---------------------------------------------------------------------------
+# Local working directory / reverse-engineering artifacts. Never publish these:
+# they contain extracted vendor files, firmware dumps and WiFi credentials.
+# ---------------------------------------------------------------------------
+_work/
+_probe.txt
+*.bin
+*.zip
+*.rar
+*.7z
+*.dump
+*.bak*
+
+# PlatformIO build output
+fw/.pio/
+
+# ---------------------------------------------------------------------------
+# Headers generated from the official Clawd-Mochi assets.
+# They are NOT redistributed here; regenerate locally with fw/tools/*.py
+# (see README "Generated headers"). Ignored for copyright and repo size.
+# ---------------------------------------------------------------------------
+fw/src/assets.h
+fw/src/web_pages.h
+fw/src/slot_labels.h
+
+# Local-only WiFi credentials / secrets
+fw/src/config_secrets.h
+
+# One-off development patch scripts (history only, not part of the toolkit)
+ext/patch_*.py
+fw/tools/patch_*.py
+
+# Firmware images (built locally, not stored in git)
+fw/dist/*.bin
+
+# Python / tooling caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# OS junk
+Thumbs.db
+desktop.ini
+.DS_Store
